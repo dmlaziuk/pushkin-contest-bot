@@ -8,9 +8,9 @@ agent = Mechanize.new
 data = JSON.parse(File.read(TOC))
 pushkin = Pushkin.new
 
-print "\nParsing"
+puts 'Parsing'
 data.each do |item|
-  title = item[0]
+  title = item[0].gsub(/ \(.*?\)/, '')
   page = agent.get(item[1])
   txt = page.xpath('//div[@class="poem"]').text
   txt.gsub!(' ', ' ')       # special character
@@ -30,5 +30,7 @@ data.each do |item|
   print '.'
 end
 
-puts "\n#{pushkin}"
-pushkin.run
+#puts "\n#{pushkin}"
+pushkin.init_hash
+File.open('pushkin.yml', 'w') { |f| f.write(YAML.dump(pushkin)) }
+File.open('pushkin.dump', 'wb') { |f| f.write(Marshal.dump(pushkin)) }
