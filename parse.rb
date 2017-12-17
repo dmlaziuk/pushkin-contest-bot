@@ -1,12 +1,11 @@
 require 'json'
 require 'mechanize'
-require_relative 'lib/pushkin'
 
 TOC = 'lyrics.json'.freeze
 
 agent = Mechanize.new
 data = JSON.parse(File.read(TOC))
-pushkin = Pushkin.new
+verses = []
 
 puts 'Parsing'
 data.each do |item|
@@ -26,11 +25,8 @@ data.each do |item|
     line.length == 0 ? nil : line
   end
   arr.compact!
-  pushkin.add(title, arr)
+  verses << [title, arr]
   print '.'
 end
-
-#puts "\n#{pushkin}"
-pushkin.init_hash
-File.open('pushkin.yml', 'w') { |f| f.write(YAML.dump(pushkin)) }
-File.open('pushkin.dump', 'wb') { |f| f.write(Marshal.dump(pushkin)) }
+puts
+File.open('lyrics.yml', 'w') { |f| f.write(YAML.dump(verses)) }
