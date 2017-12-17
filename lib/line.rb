@@ -9,7 +9,7 @@ class Line
   def initialize(line)
     @line = line
     @hash = line.hash
-    arr = line.scan(/[\p{Word}\-]+/)
+    arr = line.scan(/[\p{Word}\-]+/) # array of words without punctuation
     @words_arr = arr.map { |word| Word.new(word) }
     @words_count = arr.size
   end

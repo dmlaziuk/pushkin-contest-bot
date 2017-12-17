@@ -2,9 +2,16 @@ require 'json'
 require 'mechanize'
 require_relative 'lib/pushkin'
 
-TOC = '1825.json'.freeze
+TOC = 'lyrics.json'.freeze
 
-def parse(page)
+agent = Mechanize.new
+data = JSON.parse(File.read(TOC))
+pushkin = Pushkin.new
+
+print "\nParsing"
+data.each do |item|
+  title = item[0]
+  page = agent.get(item[1])
   txt = page.xpath('//div[@class="poem"]').text
   txt.gsub!(' ', ' ')       # special character
   txt.gsub!('‎', ' ')       # special character
@@ -19,18 +26,9 @@ def parse(page)
     line.length == 0 ? nil : line
   end
   arr.compact!
-  puts arr
+  pushkin.add(title, arr)
+  print '.'
 end
 
-data = JSON.parse(File.read(TOC))
-
-agent = Mechanize.new
-
-data.each do |i|
-  title = i[0]
-  url = i[1]
-  puts "#{title}\n\n"
-  page = agent.get(url)
-  parse(page)
-  puts "\n\n"
-end
+puts "\n#{pushkin}"
+pushkin.run
