@@ -38,11 +38,11 @@ class Pushkin
   def init_hash
     @verses.each do |v|
       v.lines_arr.each do |l|
-        @line2title[l.hash] = v.title
-        @lines_hash[l.hash] = l.line
+        @line2title[l.line_hash] = v.title
+        @lines_hash[l.line_hash] = l.line
         l.words_arr.each do |w|
-          @words_hash[w.hash] = w.word
-          w.chars_arr.each_with_index do |c, i|
+          @words_hash[w.word_hash] = w.word
+          w.chars_hash_arr.each_with_index do |c, i|
             @chars_hash[c] = w.word[i]
           end
         end

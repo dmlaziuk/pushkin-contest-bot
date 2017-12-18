@@ -1,14 +1,13 @@
 class Word
   attr_reader :word
-  attr_reader :hash
+  attr_reader :word_hash
   attr_reader :length
-  attr_reader :chars_arr
+  attr_reader :chars_hash_arr
 
   def initialize(word)
     @word = word
-    @hash = word.hash
+    @word_hash = word.hash
     @length = word.length
-    arr = word.scan(/./)
-    @chars_arr = arr.map(&:hash)
+    @chars_hash_arr = word.scan(/./).map(&:hash)
   end
 end
