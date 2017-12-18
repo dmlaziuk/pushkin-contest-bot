@@ -23,13 +23,20 @@ class PushkinContestBot
     id = request['id']
     level = request['level']
     puts "Question:#{question}"
-    words = question.scan(/[\p{Word}\-]+/).join(' ')
-    puts "   Words:#{words}"
     case level
     when 1
+      words = question.scan(/[\p{Word}\-]+/).join(' ')
+      puts "   Words:#{words}"
       answer = @pushkin.run_level1(words)
     when 2
+      words = question.scan(/[\p{Word}\-]+/).join(' ')
+      puts "   Words:#{words}"
       answer = @pushkin.run_level2(words)
+    when 3
+      arr = question.split("\n")
+      arr.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
+      arr.each { |line| puts "   Words:#{line}"}
+      answer = @pushkin.run_level3(arr)
     end
     puts "  Answer:#{answer}"
     parameters = {answer: answer, token: TOKEN, task_id: id}

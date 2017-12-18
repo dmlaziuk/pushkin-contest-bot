@@ -1,13 +1,6 @@
 require_relative 'verse'
 
 class Pushkin
-  attr_reader :verses
-  attr_reader :lines_hash
-  attr_reader :words_hash
-  attr_reader :chars_hash
-  attr_reader :line2title
-  attr_reader :wc2lines
-
   def initialize()
     @verses = []
     @lines_hash = {}
@@ -15,6 +8,7 @@ class Pushkin
     @chars_hash = {}
     @line2title = {}
     @wc2lines = {}
+    @next_line = {}
   end
 
   def add(title, text)
@@ -39,6 +33,26 @@ class Pushkin
     'нет'
   end
 
+  def run_level3(q_arr)
+    text = q_arr[0]
+    arr = text.split
+    size = arr.size
+    q1 = text.gsub('WORD','([\p{Word}\-]+)')
+    q2 = q_arr[1].gsub('WORD','([\p{Word}\-]+)')
+    query1 = Regexp.new(q1)
+    query2 = Regexp.new(q2)
+    @wc2lines[size].each do |lh|
+      line1 = @lines_hash[lh]
+      query1.match(line1) do |ans1|
+        line2 = @lines_hash[@next_line[line1.hash]]
+        query2.match(line2) do |ans2|
+          return "#{ans1[1]},#{ans2[1]}"
+        end
+      end
+    end
+    'нет'
+  end
+
   def to_s
     str = ''
     @verses.each do |v|
@@ -52,12 +66,15 @@ class Pushkin
   end
 
   def init_hash
+    prev = @verses[-1].lines_arr[-1].line_hash
     @verses.each do |v|
       v.lines_arr.each do |l|
         @lines_hash[l.line_hash] = l.line
         @line2title[l.line_hash] = v.title
         @wc2lines[l.words_count] ||= []
-        @wc2lines[l.words_count] << l.line_hash 
+        @wc2lines[l.words_count] << l.line_hash
+        @next_line[prev] = l.line_hash
+        prev = l.line_hash
         l.words_arr.each do |w|
           @words_hash[w.word_hash] = w.word
           w.chars_hash_arr.each_with_index do |c, i|
@@ -66,6 +83,7 @@ class Pushkin
         end
       end
     end
+    @next_line[prev] = @verses[0].lines_arr[0].line_hash
   end
 
   def print_hash
