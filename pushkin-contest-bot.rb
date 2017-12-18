@@ -4,10 +4,11 @@ require 'net/http'
 require 'rack'
 require_relative 'lib/pushkin'
 
+TOKEN = '7cb21edad8e21d1abf2147b12f89f276'.freeze
+MYURI = URI('http://pushkin.rubyroidlabs.com/quiz')
+
 class PushkinContestBot
   def initialize
-    @token = '7cb21edad8e21d1abf2147b12f89f276'
-    @uri = URI('http://pushkin.rubyroidlabs.com/quiz')
     @pushkin = Pushkin.new
     verses = YAML.load(File.read('lyrics2.yml'))
     verses.each do |verse|
@@ -22,15 +23,17 @@ class PushkinContestBot
     id = request['id']
     level = request['level']
     puts "Question:#{question}"
-    arr = question.scan(/[\p{Word}\-]+/)
-    q = arr.join(' ')
-    puts "Words:#{q}"
-    answer = @pushkin.run_level1(q)
-    puts "Answer:#{answer}"
-    parameters = {answer: answer, token: @token, task_id: id}
-    Net::HTTP.post_form(@uri, parameters)
-    resp = Rack::Response.new
-    resp.status = 200
-    resp.finish
+    words = question.scan(/[\p{Word}\-]+/).join(' ')
+    puts "   Words:#{words}"
+    case level
+    when 1
+      answer = @pushkin.run_level1(words)
+    when 2
+      answer = @pushkin.run_level2(words)
+    end
+    puts "  Answer:#{answer}"
+    parameters = {answer: answer, token: TOKEN, task_id: id}
+    Net::HTTP.post_form(MYURI, parameters)
+    [200, {}, []]
   end
 end

@@ -7,5 +7,4 @@
 require 'rack'
 require_relative 'pushkin-contest-bot'
 
-use Rack::CommonLogger
 run PushkinContestBot.new
