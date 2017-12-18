@@ -37,6 +37,11 @@ class PushkinContestBot
       arr.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
       arr.each { |line| puts "   Words:#{line}"}
       answer = @pushkin.run_level3(arr)
+    when 4
+      arr = question.split("\n")
+      arr.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
+      arr.each { |line| puts "   Words:#{line}"}
+      answer = @pushkin.run_level4(arr)
     end
     puts "  Answer:#{answer}"
     parameters = {answer: answer, token: TOKEN, task_id: id}

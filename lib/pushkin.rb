@@ -53,6 +53,31 @@ class Pushkin
     'нет'
   end
 
+  def run_level4(q_arr)
+    text = q_arr[0]
+    arr = text.split
+    size = arr.size
+    q1 = text.gsub('WORD','([\p{Word}\-]+)')
+    q2 = q_arr[1].gsub('WORD','([\p{Word}\-]+)')
+    q3 = q_arr[2].gsub('WORD','([\p{Word}\-]+)')
+    query1 = Regexp.new(q1)
+    query2 = Regexp.new(q2)
+    query3 = Regexp.new(q3)
+    @wc2lines[size].each do |lh|
+      line1 = @lines_hash[lh]
+      query1.match(line1) do |ans1|
+        line2 = @lines_hash[@next_line[line1.hash]]
+        query2.match(line2) do |ans2|
+          line3 = @lines_hash[@next_line[line2.hash]]
+          query3.match(line3) do |ans3|
+            return "#{ans1[1]},#{ans2[1]},#{ans3[1]}"
+          end
+        end
+      end
+    end
+    'нет'
+  end
+
   def to_s
     str = ''
     @verses.each do |v|
