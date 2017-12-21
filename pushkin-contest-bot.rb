@@ -5,7 +5,7 @@ require 'rack'
 require_relative 'lib/pushkin'
 
 TOKEN = '7cb21edad8e21d1abf2147b12f89f276'.freeze
-MYURI = URI('http://pushkin.rubyroidlabs.com/quiz')
+MY_URI = URI('http://pushkin.rubyroidlabs.com/quiz')
 
 class PushkinContestBot
   def initialize
@@ -23,29 +23,29 @@ class PushkinContestBot
     id = request['id']
     level = request['level']
     puts "Question:#{question}"
-    case level
+    answer = case level
     when 1
-      words = question.scan(/[\p{Word}\-]+/).join(' ')
-      puts "   Words:#{words}"
-      answer = @pushkin.run_level1(words)
+      @pushkin.run_level1(question)
     when 2
-      words = question.scan(/[\p{Word}\-]+/).join(' ')
-      puts "   Words:#{words}"
-      answer = @pushkin.run_level2(words)
+      @pushkin.run_level2(question)
     when 3
-      arr = question.split("\n")
-      arr.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-      arr.each { |line| puts "   Words:#{line}"}
-      answer = @pushkin.run_level3(arr)
+      @pushkin.run_level3(question)
     when 4
-      arr = question.split("\n")
-      arr.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-      arr.each { |line| puts "   Words:#{line}"}
-      answer = @pushkin.run_level4(arr)
+      @pushkin.run_level4(question)
+    when 5
+      @pushkin.run_level5(question)
+    when 6
+      @pushkin.run_level6(question)
+    when 7
+      @pushkin.run_level7(question)
+    when 8
+      @pushkin.run_level8(question)
+    else
+      'нет'
     end
     puts "  Answer:#{answer}"
     parameters = {answer: answer, token: TOKEN, task_id: id}
-    Net::HTTP.post_form(MYURI, parameters)
+    Net::HTTP.post_form(MY_URI, parameters)
     [200, {}, []]
   end
 end
