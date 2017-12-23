@@ -2,22 +2,15 @@ require_relative 'verse'
 
 class Pushkin
   def initialize()
-    # all verses
-    @verses = []
-    # line hash => "line"
-    @hash2line = {}
-    # word hash => "word"
-    @hash2word = {}
-    # char hash => "char"
-    @hash2char = {}
-    # line hash => "title"
-    @hash2title = {}
-    # words count => [line hash]
-    @wc2lineh = {}
-    # line hash => next line hash
-    @next_line = {}
-    # line hash => [word_hash]
-    @hash2words_arr = {}
+    @verses = []          # all verses
+    @hash2line = {}       # line hash => "line"
+    @hash2word = {}       # word hash => "word"
+    @hash2char = {}       # char hash => "char"
+    @hash2title = {}      # line hash => "title"
+    @wc2lineh = {}        # words count => [line hash]
+    @next_line = {}       # line hash => next line hash
+    @hash2words_arr = {}  # line hash => [word hash]
+    @hash2chars_arr = {}  # line hash => [char hash]
   end
 
   def add(title, text)
@@ -108,6 +101,20 @@ class Pushkin
     'нет'
   end
 
+  def run_level6(question)
+    #puts "    Line:#{question}"
+    words = question.scan(/[\p{Word}\-]+/)
+    words_count = words.size
+    chars_arr = words.map { |word| word.scan(/./).map(&:hash)}
+    chars_arr.flatten!
+    @wc2lineh[words_count].each do |line_hash|
+      diff1 = @hash2chars_arr[line_hash] - chars_arr
+      diff2 = chars_arr - @hash2chars_arr[line_hash]
+      return @hash2line[line_hash] if diff1.empty? && diff2.empty?
+    end
+    'нет'
+  end
+
   def to_s
     str = ''
     @verses.each do |v|
@@ -135,12 +142,15 @@ class Pushkin
         prev = line.line_hash
         # line hash => [word_hash]
         @hash2words_arr[line.line_hash] = line.words_arr.map { |word| word.word_hash }
+        @hash2chars_arr[line.line_hash] ||= []
         line.words_arr.each do |word|
           @hash2word[word.word_hash] = word.word
+          @hash2chars_arr[line.line_hash] << word.chars_hash_arr
           word.chars_hash_arr.each_with_index do |char, i|
             @hash2char[char] = word.word[i]
           end
         end
+        @hash2chars_arr[line.line_hash].flatten!
       end
     end
     @next_line[prev] = @verses[0].lines_arr[0].line_hash
