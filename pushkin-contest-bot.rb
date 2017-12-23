@@ -18,6 +18,7 @@ class PushkinContestBot
   end
 
   def call(env)
+    return [200, {}, []] if env['REQUEST_METHOD'] == 'GET'
     request = JSON(env['rack.input'].read)
     question = request['question']
     id = request['id']

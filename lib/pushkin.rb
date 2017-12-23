@@ -5,12 +5,12 @@ class Pushkin
     @verses = []          # all verses
     @hash2line = {}       # line hash => "line"
     @hash2word = {}       # word hash => "word"
-    @hash2char = {}       # char hash => "char"
     @hash2title = {}      # line hash => "title"
     @wc2lineh = {}        # words count => [line hash]
     @next_line = {}       # line hash => next line hash
     @hash2words_arr = {}  # line hash => [word hash]
     @hash2chars_arr = {}  # line hash => [char hash]
+    @cc2lineh = {}        # chars count => [line hash]
   end
 
   def add(title, text)
@@ -43,7 +43,7 @@ class Pushkin
     lines = question.split("\n")
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    lines.each { |line| puts "    Line:#{line}"}
+    lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -63,7 +63,7 @@ class Pushkin
     lines = question.split("\n")
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    lines.each { |line| puts "    Line:#{line}"}
+    lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -86,7 +86,7 @@ class Pushkin
   def run_level5(question)
     # remove punctuation
     words = question.scan(/[\p{Word}\-]+/)
-    words_arr = words.map { |word| word.hash}
+    words_arr = words.map { |word| word.hash }
     words_count = words.size
     line = words.join(' ')
     puts "    Line:#{line}"
@@ -102,15 +102,42 @@ class Pushkin
   end
 
   def run_level6(question)
-    #puts "    Line:#{question}"
     words = question.scan(/[\p{Word}\-]+/)
     words_count = words.size
-    chars_arr = words.map { |word| word.scan(/./).map(&:hash)}
+    chars_arr = words.map { |word| word.scan(/./).map(&:hash) }
     chars_arr.flatten!
     @wc2lineh[words_count].each do |line_hash|
       diff1 = @hash2chars_arr[line_hash] - chars_arr
       diff2 = chars_arr - @hash2chars_arr[line_hash]
       return @hash2line[line_hash] if diff1.empty? && diff2.empty?
+    end
+    'нет'
+  end
+
+  def run_level7(question)
+    line = question.scan(/[\p{Word}\-]+/).join
+    puts "    Line:#{line}"
+    chars_arr = line.scan(/./).map(&:hash)
+    chars_count = chars_arr.size
+    @cc2lineh[chars_count].each do |line_hash|
+      diff1 = chars_arr - @hash2chars_arr[line_hash]
+      diff2 = @hash2chars_arr[line_hash] - chars_arr
+      return @hash2line[line_hash] if diff1.empty? && diff2.empty?
+    end
+    'нет'
+  end
+
+  def run_level8(question)
+    line = question.scan(/[\p{Word}\-]+/).join
+    puts "    Line:#{line}"
+    chars_arr = line.scan(/./).map(&:hash)
+    chars_count = chars_arr.size
+    @cc2lineh[chars_count].each do |line_hash|
+      diff1 = chars_arr - @hash2chars_arr[line_hash]
+      diff2 = @hash2chars_arr[line_hash] - chars_arr
+      if diff1.size <= 1 && diff2.size <=1
+        return @hash2line[line_hash]
+      end
     end
     'нет'
   end
@@ -143,14 +170,15 @@ class Pushkin
         # line hash => [word_hash]
         @hash2words_arr[line.line_hash] = line.words_arr.map { |word| word.word_hash }
         @hash2chars_arr[line.line_hash] ||= []
+        chars_count = 0
         line.words_arr.each do |word|
           @hash2word[word.word_hash] = word.word
           @hash2chars_arr[line.line_hash] << word.chars_hash_arr
-          word.chars_hash_arr.each_with_index do |char, i|
-            @hash2char[char] = word.word[i]
-          end
+          chars_count += word.word_length
         end
         @hash2chars_arr[line.line_hash].flatten!
+        @cc2lineh[chars_count] ||= []
+        @cc2lineh[chars_count] << line.line_hash
       end
     end
     @next_line[prev] = @verses[0].lines_arr[0].line_hash
