@@ -8,7 +8,7 @@ MY_URI = URI('http://pushkin.rubyroidlabs.com/quiz')
 class PushkinContestBot
   def initialize
     @pushkin = Pushkin.new
-    verses = YAML.load(File.read('lyrics2.yml'))
+    verses = YAML.load(File.read('lyrics3.yml'))
     verses.each do |verse|
       @pushkin.add(verse[0], verse[1])
     end
