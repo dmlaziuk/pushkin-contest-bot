@@ -1,5 +1,5 @@
 require 'mechanize'
-_TOC = %w[http://rvb.ru/pushkin/tocvol1.htm]
+
 TOC = %w[http://rvb.ru/pushkin/tocvol1.htm http://rvb.ru/pushkin/tocvol2.htm
          http://rvb.ru/pushkin/tocvol3.htm http://rvb.ru/pushkin/tocvol4.htm]
 

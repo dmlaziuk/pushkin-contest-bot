@@ -1,7 +1,5 @@
 require 'yaml'
-require 'json'
 require 'net/http'
-require 'rack'
 require_relative 'lib/pushkin'
 
 TOKEN = '7cb21edad8e21d1abf2147b12f89f276'.freeze
