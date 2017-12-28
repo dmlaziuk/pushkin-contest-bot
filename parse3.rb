@@ -30,10 +30,10 @@ benchmark(CAPTION, 11, FORMAT, ' Total time', 'Averge time') do |bm|
       begin
         title2 ||= page.xpath('//div[@class="title"]/h1').text
         title2 = title if title2.empty?
-        title2 = title if title2.include?('*')
-        title2.gsub!(' ', '')
-        title2.gsub!(/\d+$/, '')
-        title2.gsub!(/\s+/, ' ')
+        # title2 = title if title2.include?('*')
+        #title2.gsub!(' ', '')
+        #title2.gsub!(/\d+$/, '')
+        #title2.gsub!(/\s+/, ' ')
         txt = page.xpath('//span[@class="vl"]')
         if txt.any?
           arr = []

@@ -20,7 +20,7 @@ class Pushkin
   def run_level1(question)
     # remove punctuation
     line = question.scan(/[\p{Word}\-]+/).join(' ')
-    puts "    Line:#{line}"
+    # puts "    Line:#{line}"
     @hash2title[line.hash]
   end
 
@@ -29,7 +29,7 @@ class Pushkin
     words = question.scan(/[\p{Word}\-]+/)
     words_count = words.size
     line = words.join(' ')
-    puts "    Line:#{line}"
+    # puts "    Line:#{line}"
     query = Regexp.new(line.gsub('WORD','([\p{Word}\-]+)'))
     @wc2lineh[words_count].each do |line_hash|
       query.match(@hash2line[line_hash]) do |word|
@@ -41,9 +41,10 @@ class Pushkin
 
   def run_level3(question)
     lines = question.split("\n")
+    return run_level2(question) if lines.size == 1
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    lines.each { |line| puts "    Line:#{line}" }
+    # lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -61,9 +62,10 @@ class Pushkin
 
   def run_level4(question)
     lines = question.split("\n")
+    return run_level3(question) if lines.size == 2
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    lines.each { |line| puts "    Line:#{line}" }
+    # lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -89,7 +91,7 @@ class Pushkin
     words_arr = words.map { |word| word.hash }
     words_count = words.size
     line = words.join(' ')
-    puts "    Line:#{line}"
+    # puts "    Line:#{line}"
     @wc2lineh[words_count].each do |line_hash|
       diff = @hash2words_arr[line_hash] - words_arr
       if diff.size == 1
@@ -116,7 +118,7 @@ class Pushkin
 
   def run_level7(question)
     line = question.scan(/[\p{Word}\-]+/).join
-    puts "    Line:#{line}"
+    # puts "    Line:#{line}"
     chars_arr = line.scan(/./).map(&:hash)
     chars_count = chars_arr.size
     @cc2lineh[chars_count].each do |line_hash|
@@ -129,7 +131,7 @@ class Pushkin
 
   def run_level8(question)
     line = question.scan(/[\p{Word}\-]+/).join
-    puts "    Line:#{line}"
+    # puts "    Line:#{line}"
     chars_arr = line.scan(/./).map(&:hash)
     chars_count = chars_arr.size
     @cc2lineh[chars_count].each do |line_hash|
