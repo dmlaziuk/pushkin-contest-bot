@@ -90,7 +90,7 @@ class Pushkin
     words = question.scan(/[\p{Word}\-]+/)
     words_arr = words.map { |word| word.hash }
     words_count = words.size
-    line = words.join(' ')
+    # line = words.join(' ')
     # puts "    Line:#{line}"
     @wc2lineh[words_count].each do |line_hash|
       diff = @hash2words_arr[line_hash] - words_arr
@@ -131,6 +131,7 @@ class Pushkin
 
   def run_level8(question)
     line = question.scan(/[\p{Word}\-]+/).join
+    line.gsub!(' ', '')
     # puts "    Line:#{line}"
     chars_arr = line.scan(/./).map(&:hash)
     chars_count = chars_arr.size
