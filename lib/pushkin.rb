@@ -20,19 +20,16 @@ class Pushkin
   end
 
   def run_level1(question)
-    # remove punctuation
     line = question.scan(/[\p{Word}\-]+/).join(' ')
     @hash2title[line.hash]
   end
 
   def run_level2(question)
-    # remove punctuation
-    words = question.scan(/[\p{Word}\-]+/)
-    words_count = words.size
-    line = words.join(' ')
-    query = Regexp.new(line.gsub('WORD','([\p{Word}\-]+)'))
+    line = question.sub('%WORD%', 'WORD')
+    words_count = line.scan(/[\p{Word}\-]+/).size
+    query = Regexp.new(line.sub('WORD','([\p{Word}]+)'))
     @wc2lineh[words_count].each do |line_hash|
-      query.match(@hash2line[line_hash]) do |word|
+      query.match(@hash2line_orig[line_hash]) do |word|
         return word[1]
       end
     end
@@ -42,16 +39,12 @@ class Pushkin
   def run_level3(question)
     lines = question.split("\n")
     return run_level2(question) if lines.size == 1
-    # remove punctuation
-    lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    words_count = lines[0].split.size
-    query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
-    query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
+    lines.map! { |line| line.sub('%WORD%', 'WORD') }
+    words_count = lines.first.scan(/[\p{Word}\-]+/).size
+    query = lines.map { |line| Regexp.new(line.sub('WORD','([\p{Word}]+)')) }
     @wc2lineh[words_count].each do |lh|
-      line1 = @hash2line[lh]
-      query1.match(line1) do |word1|
-        line2 = @hash2line[@next_line[line1.hash]]
-        query2.match(line2) do |word2|
+      query[0].match(@hash2line_orig[lh]) do |word1|
+        query[1].match(@hash2line_orig[@next_line[lh]]) do |word2|
           return "#{word1[1]},#{word2[1]}"
         end
       end
@@ -62,20 +55,14 @@ class Pushkin
   def run_level4(question)
     lines = question.split("\n")
     return run_level3(question) if lines.size == 2
-    # remove punctuation
-    lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    words_count = lines[0].split.size
-    query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
-    query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
-    query3 = Regexp.new(lines[2].gsub('WORD','([\p{Word}\-]+)'))
+    lines.map! { |line| line.sub('%WORD%', 'WORD') }
+    words_count = lines.first.scan(/[\p{Word}\-]+/).size
+    query = lines.map { |line| Regexp.new(line.sub('WORD','([\p{Word}]+)')) }
     @wc2lineh[words_count].each do |lh|
-      line1 = @hash2line[lh]
-      query1.match(line1) do |ans1|
-        line2 = @hash2line[@next_line[line1.hash]]
-        query2.match(line2) do |ans2|
-          line3 = @hash2line[@next_line[line2.hash]]
-          query3.match(line3) do |ans3|
-            return "#{ans1[1]},#{ans2[1]},#{ans3[1]}"
+      query[0].match(@hash2line_orig[lh]) do |word1|
+        query[1].match(@hash2line_orig[@next_line[lh]]) do |word2|
+          query[2].match(@hash2line_orig[@next_line[@next_line[lh]]]) do |word3|
+            return "#{word1[1]},#{word2[1]},#{word3[1]}"
           end
         end
       end
@@ -84,7 +71,6 @@ class Pushkin
   end
 
   def run_level5(question)
-    # remove punctuation
     words = question.scan(/[\p{Word}\-]+/)
     words_arr = words.map { |word| word.hash }
     words_count = words.size
