@@ -1,9 +1,11 @@
+require 'logger'
 require_relative 'verse'
 
 class Pushkin
-  def initialize()
+  def initialize
     @verses = []          # all verses
     @hash2line = {}       # line hash => "line"
+    @hash2line_orig = {}  # line hash => "line"
     @hash2word = {}       # word hash => "word"
     @hash2title = {}      # line hash => "title"
     @wc2lineh = {}        # words count => [line hash]
@@ -20,7 +22,6 @@ class Pushkin
   def run_level1(question)
     # remove punctuation
     line = question.scan(/[\p{Word}\-]+/).join(' ')
-    # puts "    Line:#{line}"
     @hash2title[line.hash]
   end
 
@@ -29,7 +30,6 @@ class Pushkin
     words = question.scan(/[\p{Word}\-]+/)
     words_count = words.size
     line = words.join(' ')
-    # puts "    Line:#{line}"
     query = Regexp.new(line.gsub('WORD','([\p{Word}\-]+)'))
     @wc2lineh[words_count].each do |line_hash|
       query.match(@hash2line[line_hash]) do |word|
@@ -44,7 +44,6 @@ class Pushkin
     return run_level2(question) if lines.size == 1
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    # lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -65,7 +64,6 @@ class Pushkin
     return run_level3(question) if lines.size == 2
     # remove punctuation
     lines.map! { |line| line.scan(/[\p{Word}\-]+/).join(' ') }
-    # lines.each { |line| puts "    Line:#{line}" }
     words_count = lines[0].split.size
     query1 = Regexp.new(lines[0].gsub('WORD','([\p{Word}\-]+)'))
     query2 = Regexp.new(lines[1].gsub('WORD','([\p{Word}\-]+)'))
@@ -90,8 +88,6 @@ class Pushkin
     words = question.scan(/[\p{Word}\-]+/)
     words_arr = words.map { |word| word.hash }
     words_count = words.size
-    # line = words.join(' ')
-    # puts "    Line:#{line}"
     @wc2lineh[words_count].each do |line_hash|
       diff = @hash2words_arr[line_hash] - words_arr
       if diff.size == 1
@@ -104,43 +100,95 @@ class Pushkin
   end
 
   def run_level6(question)
-    words = question.scan(/[\p{Word}\-]+/)
-    words_count = words.size
-    chars_arr = words.map { |word| word.scan(/./).map(&:hash) }
-    chars_arr.flatten!
-    @wc2lineh[words_count].each do |line_hash|
+    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
+    chars_count = chars_arr.size
+    @cc2lineh[chars_count].each do |line_hash|
       diff1 = @hash2chars_arr[line_hash] - chars_arr
       diff2 = chars_arr - @hash2chars_arr[line_hash]
-      return @hash2line[line_hash] if diff1.empty? && diff2.empty?
+      return @hash2line_orig[line_hash] if diff1.empty? && diff2.empty?
     end
     'нет'
   end
 
   def run_level7(question)
-    line = question.scan(/[\p{Word}\-]+/).join
-    # puts "    Line:#{line}"
-    chars_arr = line.scan(/./).map(&:hash)
-    chars_count = chars_arr.size
-    @cc2lineh[chars_count].each do |line_hash|
-      diff1 = chars_arr - @hash2chars_arr[line_hash]
-      diff2 = @hash2chars_arr[line_hash] - chars_arr
-      return @hash2line[line_hash] if diff1.empty? && diff2.empty?
+    run_level6(question)
+  end
+
+  def run_level8(question)
+    chars_arr = question.scan(/./).map(&:hash)
+    @hash2line_orig.each do |line_hash, line_orig|
+      orig_arr = line_orig.scan(/[\p{^Punct}\-]/).map(&:hash)
+      arr1 = Array.new(chars_arr)
+      arr2 = Array.new(orig_arr)
+      arr1.map! do |i|
+        ind = arr2.index(i)
+        if ind
+          arr2[ind] = nil
+          nil
+        else
+          i
+        end
+      end
+      diff1 = arr1.compact
+      next if diff1.size > 1
+      arr1 = Array.new(chars_arr)
+      arr2 = Array.new(orig_arr)
+      arr2.map! do |i|
+        ind = arr1.index(i)
+        if ind
+          arr1[ind] = nil
+          nil
+        else
+          i
+        end
+      end
+      diff2 = arr2.compact
+      return line_orig if diff1.size <= 1 && diff2.size <= 1
     end
     'нет'
   end
 
-  def run_level8(question)
-    line = question.scan(/[\p{Word}\-]+/).join
-    line.gsub!(' ', '')
-    # puts "    Line:#{line}"
-    chars_arr = line.scan(/./).map(&:hash)
+  def run_level8_1(question)
+    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
     chars_count = chars_arr.size
     @cc2lineh[chars_count].each do |line_hash|
       diff1 = chars_arr - @hash2chars_arr[line_hash]
       diff2 = @hash2chars_arr[line_hash] - chars_arr
-      if diff1.size <= 1 && diff2.size <=1
-        return @hash2line[line_hash]
+      return @hash2line_orig[line_hash] if diff1.size <= 1 && diff2.size <= 1
+    end
+    'нет'
+  end
+
+  def run_level8_2(question)
+    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
+    chars_count = chars_arr.size
+    @cc2lineh[chars_count].each do |line_hash|
+      arr1 = Array.new(chars_arr)
+      arr2 = Array.new(@hash2chars_arr[line_hash])
+      arr1.map! do |i|
+        ind = arr2.index(i)
+        if ind
+          arr2[ind] = nil
+          nil
+        else
+          i
+        end
       end
+      diff1 = arr1.compact
+      next if diff1.size > 1
+      arr1 = Array.new(chars_arr)
+      arr2 = Array.new(@hash2chars_arr[line_hash])
+      arr2.map! do |i|
+        ind = arr1.index(i)
+        if ind
+          arr1[ind] = nil
+          nil
+        else
+          i
+        end
+      end
+      diff2 = arr2.compact
+      return @hash2line_orig[line_hash] if diff1.size <= 1 && diff2.size <= 1
     end
     'нет'
   end
@@ -163,6 +211,7 @@ class Pushkin
       verse.lines_arr.each do |line|
         # line hash => "line"
         @hash2line[line.line_hash] = line.line
+        @hash2line_orig[line.line_hash] = line.line_orig
         # line hash => "title"
         @hash2title[line.line_hash] = verse.title
         # words count => [line_hash]

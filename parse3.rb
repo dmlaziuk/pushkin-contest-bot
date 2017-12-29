@@ -39,12 +39,12 @@ benchmark(CAPTION, 11, FORMAT, ' Total time', 'Averge time') do |bm|
           arr = []
           txt.each do |i|
             line = i.text
-            line.gsub!(' ', ' ')
-            line.gsub!("\u0097", ' ')
-            line.gsub!(/\d+$/, ' ')
-            line.gsub!(/ \d+.$/, '.')
-            line.gsub!(/\s+/, ' ')
-            line.strip!
+            # line.gsub!(' ', ' ')
+            line.gsub!("\u0097", '—')
+            # line.gsub!(/\d+$/, ' ')
+            # line.gsub!(/ \d+.$/, '.')
+            # line.gsub!(/\s+/, ' ')
+            # line.strip!
             arr << line
           end
           verses << [title2, arr]

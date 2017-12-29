@@ -10,30 +10,28 @@ include Benchmark
 TOKEN = '7cb21edad8e21d1abf2147b12f89f276'.freeze
 MY_URI = URI('http://pushkin.rubyroidlabs.com/quiz')
 LOGFILE = 'pushkin.log'
-LYRICS = 'lyrics1.yml'
+LYRICS = 'lyrics3.yml'
 LEVELS = 8
 
 class PushkinContestBot
   def initialize
-    @pushkin = Pushkin.new
     @count = [0] * (LEVELS + 1)
     @time = [Tms.new] * (LEVELS + 1)
     @logger = Logger.new(LOGFILE, level: :info)
     @logger.formatter = proc { |severity, datetime, progname, msg| "#{msg}\n" }
+    @pushkin = Pushkin.new
     verses = []
-    benchmark(CAPTION, 10, FORMAT) do |bm|
-      bm.report('Load YAML:') { verses = YAML.load(File.read(LYRICS)) }
-      bm.report('Add2array:') do
-        verses.each do |verse|
-          @pushkin.add(verse[0], verse[1])
-        end
-      end
-      bm.report('Init hash:') { @pushkin.init_hash }
-    end
+    @logger.info "   Lyrics:#{LYRICS}"
+    time = measure { verses = YAML.load(File.read(LYRICS)) }
+    @logger.info "Load YAML:#{time}".chomp
+    time = measure { verses.each { |verse| @pushkin.add(verse[0], verse[1]) }}
+    @logger.info "Add2array:#{time}".chomp
+    time = measure { @pushkin.init_hash }
+    @logger.info "Init hash:#{time}".chomp
   end
 
   def call(env)
-    return [200, {}, []] if env['REQUEST_METHOD'] == 'GET'
+    return results if env['REQUEST_METHOD'] == 'GET'
     answer = 'нет'
     request = JSON(env['rack.input'].read)
     question = request['question']
@@ -71,5 +69,12 @@ class PushkinContestBot
     parameters = { answer: answer, token: TOKEN, task_id: id }
     Net::HTTP.post_form(MY_URI, parameters)
     [200, {}, []]
+  end
+
+  def results
+    [200,
+    {'Content-Type' => 'text/plain'},
+    (1..LEVELS).map { |i| "Level #{i}:#{@count[i]} => #{@time[i]}" }
+    ]
   end
 end
