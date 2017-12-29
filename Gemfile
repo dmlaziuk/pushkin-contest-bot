@@ -5,7 +5,16 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-# Use Puma as the app server
-gem 'rack'
-gem 'puma', '~> 3.7'
 gem 'mechanize'
+gem 'puma'
+gem 'rack'
+
+group :deployment do
+  gem 'capistrano', '~> 3.10'
+  gem 'capistrano-bundler'
+#  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
+#  gem 'capistrano-sidekiq'
+  gem 'capistrano3-puma', github: 'seuros/capistrano-puma'
+#  gem 'capistrano-db-tasks', require: false
+end
