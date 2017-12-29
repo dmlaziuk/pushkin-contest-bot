@@ -100,7 +100,7 @@ class Pushkin
   end
 
   def run_level6(question)
-    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
+    chars_arr = question.scan(/./).map(&:hash)
     chars_count = chars_arr.size
     @cc2lineh[chars_count].each do |line_hash|
       diff1 = @hash2chars_arr[line_hash] - chars_arr
@@ -116,34 +116,17 @@ class Pushkin
 
   def run_level8(question)
     chars_arr = question.scan(/./).map(&:hash)
-    @hash2line_orig.each do |line_hash, line_orig|
-      orig_arr = line_orig.scan(/[\p{^Punct}\-]/).map(&:hash)
-      arr1 = Array.new(chars_arr)
-      arr2 = Array.new(orig_arr)
-      arr1.map! do |i|
-        ind = arr2.index(i)
-        if ind
-          arr2[ind] = nil
-          nil
-        else
-          i
-        end
-      end
-      diff1 = arr1.compact
+    chars_count = chars_arr.size
+    @cc2lineh[chars_count].each do |line_hash|
+      orig_arr = @hash2line_orig[line_hash].scan(/[\p{^Punct}\-]/).map(&:hash)
+      arr = Array.new(orig_arr)
+      diff1 = chars_arr.map { |i| (ind = arr.index(i)) ? (arr[ind] = nil) : i }
+      diff1.compact!
       next if diff1.size > 1
-      arr1 = Array.new(chars_arr)
-      arr2 = Array.new(orig_arr)
-      arr2.map! do |i|
-        ind = arr1.index(i)
-        if ind
-          arr1[ind] = nil
-          nil
-        else
-          i
-        end
-      end
-      diff2 = arr2.compact
-      return line_orig if diff1.size <= 1 && diff2.size <= 1
+      diff2 = orig_arr.map { |i| (ind = chars_arr.index(i)) ? (chars_arr[ind] = nil) : i }
+      diff2.compact!
+      next if diff2.size > 1
+      return @hash2line_orig[line_hash]
     end
     'нет'
   end
@@ -222,13 +205,11 @@ class Pushkin
         # line hash => [word_hash]
         @hash2words_arr[line.line_hash] = line.words_arr.map { |word| word.word_hash }
         @hash2chars_arr[line.line_hash] ||= []
-        chars_count = 0
-        line.words_arr.each do |word|
-          @hash2word[word.word_hash] = word.word
-          @hash2chars_arr[line.line_hash] << word.chars_hash_arr
-          chars_count += word.word_length
+        line.words_arr.each do |wrd|
+          @hash2word[wrd.word_hash] = wrd.word
         end
-        @hash2chars_arr[line.line_hash].flatten!
+        @hash2chars_arr[line.line_hash] = line.line_orig.scan(/[\p{^Punct}\-]/).map(&:hash)
+        chars_count = @hash2chars_arr[line.line_hash].size
         @cc2lineh[chars_count] ||= []
         @cc2lineh[chars_count] << line.line_hash
       end
