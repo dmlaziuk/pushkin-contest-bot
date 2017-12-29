@@ -89,12 +89,9 @@ class Pushkin
     words_arr = words.map { |word| word.hash }
     words_count = words.size
     @wc2lineh[words_count].each do |line_hash|
-      diff = @hash2words_arr[line_hash] - words_arr
-      if diff.size == 1
-        word1 = @hash2word[diff.first]
-        word2 = @hash2word[(words_arr - @hash2words_arr[line_hash]).first]
-        return "#{word1},#{word2}"
-      end
+      diff1 = @hash2words_arr[line_hash] - words_arr
+      diff2 = words_arr - @hash2words_arr[line_hash]
+      return "#{@hash2word[diff1.first]},#{@hash2word[diff2.first]}" if diff1.size == 1 && diff2.size == 1
     end
     'нет'
   end
@@ -127,51 +124,6 @@ class Pushkin
       diff2.compact!
       next if diff2.size > 1
       return @hash2line_orig[line_hash]
-    end
-    'нет'
-  end
-
-  def run_level8_1(question)
-    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
-    chars_count = chars_arr.size
-    @cc2lineh[chars_count].each do |line_hash|
-      diff1 = chars_arr - @hash2chars_arr[line_hash]
-      diff2 = @hash2chars_arr[line_hash] - chars_arr
-      return @hash2line_orig[line_hash] if diff1.size <= 1 && diff2.size <= 1
-    end
-    'нет'
-  end
-
-  def run_level8_2(question)
-    chars_arr = question.scan(/[\p{L}\-]/).map(&:hash)
-    chars_count = chars_arr.size
-    @cc2lineh[chars_count].each do |line_hash|
-      arr1 = Array.new(chars_arr)
-      arr2 = Array.new(@hash2chars_arr[line_hash])
-      arr1.map! do |i|
-        ind = arr2.index(i)
-        if ind
-          arr2[ind] = nil
-          nil
-        else
-          i
-        end
-      end
-      diff1 = arr1.compact
-      next if diff1.size > 1
-      arr1 = Array.new(chars_arr)
-      arr2 = Array.new(@hash2chars_arr[line_hash])
-      arr2.map! do |i|
-        ind = arr1.index(i)
-        if ind
-          arr1[ind] = nil
-          nil
-        else
-          i
-        end
-      end
-      diff2 = arr2.compact
-      return @hash2line_orig[line_hash] if diff1.size <= 1 && diff2.size <= 1
     end
     'нет'
   end
