@@ -72,9 +72,11 @@ class PushkinContestBot
   end
 
   def results
+    txt = (1..LEVELS).map { |i| "Level #{i}:#{@count[i]} => #{@time[i]}" }
+    txt << "  Total:#{@count.sum} => #{@time.reduce(:+)}"
     [200,
     {'Content-Type' => 'text/plain'},
-    (1..LEVELS).map { |i| "Level #{i}:#{@count[i]} => #{@time[i]}" }
+    txt
     ]
   end
 end
