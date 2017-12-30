@@ -1,10 +1,8 @@
-require 'logger'
 require_relative 'verse'
 
 class Pushkin
   def initialize
     @verses = []          # all verses
-    @hash2line = {}       # line hash => "line"
     @hash2line_orig = {}  # line hash => "line"
     @hash2word = {}       # word hash => "word"
     @hash2title = {}      # line hash => "title"
@@ -76,8 +74,10 @@ class Pushkin
     words_count = words.size
     @wc2lineh[words_count].each do |line_hash|
       diff1 = @hash2words_arr[line_hash] - words_arr
+      next if diff1.size > 1
       diff2 = words_arr - @hash2words_arr[line_hash]
-      return "#{@hash2word[diff1.first]},#{@hash2word[diff2.first]}" if diff1.size == 1 && diff2.size == 1
+      next if diff2.size > 1
+      return "#{@hash2word[diff1.first]},#{@hash2word[diff2.first]}"
     end
     'нет'
   end
@@ -87,8 +87,10 @@ class Pushkin
     chars_count = chars_arr.size
     @cc2lineh[chars_count].each do |line_hash|
       diff1 = @hash2chars_arr[line_hash] - chars_arr
+      next if diff1.any?
       diff2 = chars_arr - @hash2chars_arr[line_hash]
-      return @hash2line_orig[line_hash] if diff1.empty? && diff2.empty?
+      next if diff2.any?
+      return @hash2line_orig[line_hash]
     end
     'нет'
   end
@@ -126,27 +128,30 @@ class Pushkin
     str
   end
 
+  # indexing @verses
   def init_hash
     prev = @verses[-1].lines_arr[-1].line_hash
     @verses.each do |verse|
       verse.lines_arr.each do |line|
         # line hash => "line"
-        @hash2line[line.line_hash] = line.line
         @hash2line_orig[line.line_hash] = line.line_orig
         # line hash => "title"
         @hash2title[line.line_hash] = verse.title
         # words count => [line_hash]
         @wc2lineh[line.words_count] ||= []
         @wc2lineh[line.words_count] << line.line_hash
+        # line hash => next line hash
         @next_line[prev] = line.line_hash
         prev = line.line_hash
-        # line hash => [word_hash]
-        @hash2words_arr[line.line_hash] = line.words_arr.map { |word| word.word_hash }
-        @hash2chars_arr[line.line_hash] ||= []
+        # word hash => "word"
         line.words_arr.each do |wrd|
           @hash2word[wrd.word_hash] = wrd.word
         end
+        # line hash => [word_hash]
+        @hash2words_arr[line.line_hash] = line.words_arr.map { |word| word.word_hash }
+        # line hash => [char hash]
         @hash2chars_arr[line.line_hash] = line.line_orig.scan(/[\p{^Punct}\-]/).map(&:hash)
+        # chars count => [line hash]
         chars_count = @hash2chars_arr[line.line_hash].size
         @cc2lineh[chars_count] ||= []
         @cc2lineh[chars_count] << line.line_hash
