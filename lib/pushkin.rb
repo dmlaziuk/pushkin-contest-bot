@@ -121,7 +121,7 @@ class Pushkin
     @verses.each do |v|
       str << "#{v.title}\n\n"
       v.lines_arr.each do |l|
-        str << "#{l.line}\n"
+        str << "#{l.line_orig}\n"
       end
       str << "\n\n"
     end

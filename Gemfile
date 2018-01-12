@@ -8,3 +8,5 @@ end
 gem 'mechanize'
 gem 'puma'
 gem 'rack'
+gem 'rspec'
+
